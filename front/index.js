@@ -11,7 +11,26 @@ if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton || !canv
 }
 canvas.width = 800;
 canvas.height = 800;
+canvas.style.background = "#eeeeee";
 // отключаем контекстное меню по нажатию на ПКМ
 canvas.addEventListener("contextmenu", (e) => e.button === 2 && e.preventDefault());
-// joinButton.addEventListener("")
+const eventSource = new EventSource("/sse");
+eventSource.addEventListener("open", () => {
+    console.log("[open]");
+});
+eventSource.addEventListener("message", ({ data }) => {
+    console.log("[message]", data);
+});
+eventSource.addEventListener("error", (err) => console.log("[error]", err));
+joinButton.addEventListener("click", () => {
+    const id = idInput.value;
+    const data = {
+        id,
+    };
+    const body = JSON.stringify(data);
+    return fetch("/join", {
+        method: "POST",
+        body,
+    });
+});
 //# sourceMappingURL=index.js.map

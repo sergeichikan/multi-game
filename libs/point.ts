@@ -8,11 +8,7 @@ export class Point {
         this.y = y;
     }
 
-    public clone(): Point {
-        return new Point(this.x, this.y);
-    }
-
-    public distance({ x, y }: Point) {
+    public distance({ x, y }: Point): number {
         return Math.sqrt(Math.pow(Math.abs(x - this.x), 2) + Math.pow(Math.abs(y - this.y), 2));
     }
 
