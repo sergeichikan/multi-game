@@ -6,7 +6,7 @@ import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
 
-const host = "localhost";
+// const host = "localhost";
 const port = 3000;
 const server = createServer();
 
@@ -61,6 +61,6 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
 });
 
 server.listen(port, () => {
-    console.log(`http://${host}:${port}`);
+    console.log(`http://:${port}`);
     game.run();
 });

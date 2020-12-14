@@ -4,7 +4,7 @@ import { Wizard } from "./libs/wizard.js";
 import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
-const host = "localhost";
+// const host = "localhost";
 const port = 3000;
 const server = createServer();
 const game = new Game();
@@ -54,7 +54,7 @@ server.on("request", (req, res) => {
     return;
 });
 server.listen(port, () => {
-    console.log(`http://${host}:${port}`);
+    console.log(`http://:${port}`);
     game.run();
 });
 //# sourceMappingURL=server.js.map
