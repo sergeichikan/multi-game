@@ -4,6 +4,7 @@ import { Wizard } from "./libs/wizard.js";
 import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
+import { getRandomPoint } from "./libs/get-random-point";
 // const host = "localhost";
 const port = 3000;
 const server = createServer();
@@ -32,7 +33,7 @@ server.on("request", (req, res) => {
         return getBody(req)
             .then((body) => {
             const id = body.id;
-            const location = new Point(100, 100);
+            const location = getRandomPoint();
             const wizard = new Wizard(location, id);
             game.wizards.push(wizard);
         });
