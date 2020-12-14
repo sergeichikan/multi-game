@@ -13,11 +13,15 @@ export class Game {
     }
 
     public tick() {
-
+        this.wizards.forEach((wizard) => {
+            wizard.follower.distance && wizard.follower.step();
+        });
     }
 
     public send() {
-        const data = {};
+        const data = {
+            wizards: this.wizards,
+        };
         const json = JSON.stringify(data);
         this.responses.forEach((res: ServerResponse) => {
             res.write(`data: ${json}\n\n`);

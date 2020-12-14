@@ -16,7 +16,7 @@ export class Point {
         return new Point(clientX - left, clientY - top);
     };
 
-    static readonly fromObj = ({ x, y }: Point) => {
+    static readonly fromObj = ({ x, y }: { x: number, y: number }): Point => {
         return new Point(x, y);
     };
 }

@@ -27,7 +27,7 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
         game.responses.push(res);
         return;
     }
-    return sendFile(req.url || "", res);
+    return sendFile(req.url || "", res).catch((err) => res.end(JSON.stringify(err.message)));
 });
 
 server.on("request", (req: IncomingMessage, res: ServerResponse) => {
@@ -44,7 +44,18 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
             });
     }
     if (req.url === "/target") {
-        return;
+        return getBody<{ point: { x: number, y: number }, id: string }>(req)
+            .then((body) => {
+                const id: string = body.id;
+                const point = body.point;
+                const filteredWizards: Wizard[] = game.wizards.filter((wizard: Wizard) => wizard.id === id);
+                const wizard: Wizard | undefined = filteredWizards[0];
+                if (!wizard) {
+                    return res.end("false");
+                }
+                wizard.follower.setTarget(Point.fromObj(point));
+                res.end("true");
+            });
     }
     return;
 });
