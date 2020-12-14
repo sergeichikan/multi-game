@@ -1,8 +1,2 @@
 # Project exclude paths
 /node_modules/
-/point.js
-/point.js.map
-/send-file.js
-/send-file.js.map
-/server.js
-/server.js.map
