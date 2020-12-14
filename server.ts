@@ -49,11 +49,10 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
                 const id: string = body.id;
                 const point = body.point;
                 const filteredWizards: Wizard[] = game.wizards.filter((wizard: Wizard) => wizard.id === id);
-                const wizard: Wizard | undefined = filteredWizards[0];
-                if (!wizard) {
-                    return res.end("false");
-                }
-                wizard.follower.setTarget(Point.fromObj(point));
+                // const wizard: Wizard | undefined = filteredWizards[0];
+                filteredWizards.forEach((wizard) => {
+                    wizard.follower.setTarget(Point.fromObj(point));
+                });
                 res.end("true");
             });
     }
