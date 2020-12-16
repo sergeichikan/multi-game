@@ -3,7 +3,7 @@ const idInput = document.querySelector('input[id="idInput"]');
 const joinButton = document.querySelector('button[id="joinButton"]');
 const closeButton = document.querySelector('button[id="closeButton"]');
 const addBotButton = document.querySelector('button[id="addBotButton"]');
-const hpSpan = document.querySelector('span[id="hpSpan"]');
+const hpSpan = document.querySelector('div[id="hpSpan"]');
 const canvas = document.querySelector('canvas[id="mainCanvas"]');
 const ctx = canvas && canvas.getContext("2d");
 if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton || !canvas || !ctx) {
@@ -16,13 +16,25 @@ canvas.style.background = "#eeeeee";
 canvas.addEventListener("contextmenu", (e) => e.button === 2 && e.preventDefault());
 let game = {
     wizards: [],
+    fireBalls: [],
 };
+const keyUrlMap = new Map([
+    // ["KeyW", "/blink"],
+    ["KeyR", "/fire"],
+]);
+let keyboardCode = "";
+document.addEventListener("keydown", (event) => {
+    keyboardCode = event.code;
+});
 const eventSource = new EventSource("/sse");
 eventSource.addEventListener("open", () => {
     console.log("[open]");
 });
 eventSource.addEventListener("message", ({ data }) => {
     game = JSON.parse(data);
+    hpSpan.innerHTML = game.wizards
+        .map((wizard) => `${wizard.id}: ${wizard.hp}`)
+        .join("<br>");
 });
 eventSource.addEventListener("error", (err) => console.log("[error]", err));
 joinButton.addEventListener("click", () => {
@@ -44,7 +56,9 @@ canvas.addEventListener("mousedown", (e) => {
         point,
     };
     const body = JSON.stringify(data);
-    return fetch("/target", {
+    const url = keyUrlMap.get(keyboardCode) || "/target";
+    keyboardCode = "";
+    return fetch(url, {
         method: "POST",
         body,
     });
@@ -72,6 +86,13 @@ const wizardDrawPath = (wizard) => {
     ctx.stroke();
     ctx.closePath();
 };
+const fireBallDraw = (fireBall) => {
+    ctx.beginPath();
+    ctx.arc(fireBall.follower.from.x, fireBall.follower.from.y, fireBall.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+};
 const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     game.wizards.forEach((wizard) => {
@@ -79,11 +100,12 @@ const draw = () => {
             drawWizard(wizard, "green");
         }
         else {
-            drawWizard(wizard, "red");
+            drawWizard(wizard, "blue");
         }
         wizardDrawTarget(wizard);
         wizardDrawPath(wizard);
     });
+    game.fireBalls.forEach(fireBallDraw);
     requestAnimationFrame(draw);
 };
 draw();

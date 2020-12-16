@@ -5,7 +5,8 @@ import { Wizard } from "./libs/wizard.js";
 import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
-import {getRandomPoint} from "./libs/get-random-point.js";
+import { getRandomPoint } from "./libs/get-random-point.js";
+import { FireBall } from "./libs/fire-ball.js";
 
 // const host = "localhost";
 const port = 3000;
@@ -49,11 +50,24 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
             .then((body) => {
                 const id: string = body.id;
                 const point = body.point;
-                const filteredWizards: Wizard[] = game.wizards.filter((wizard: Wizard) => wizard.id === id);
-                // const wizard: Wizard | undefined = filteredWizards[0];
-                filteredWizards.forEach((wizard) => {
-                    wizard.follower.setTarget(Point.fromObj(point));
-                });
+                const wizard: Wizard | undefined = game.getWizard(id);
+                if (!wizard) {
+                    throw new Error("invalid wizard");
+                }
+                wizard.follower.setTarget(Point.fromObj(point));
+                res.end("true");
+            });
+    }
+    if (req.url === "/fire") {
+        return getBody<{ id: string, point: { x: number, y: number } }>(req)
+            .then(({ id, point }) => {
+                const wizard: Wizard | undefined = game.getWizard(id);
+                if (!wizard) {
+                    throw new Error("invalid wizard");
+                }
+                const target = Point.fromObj(point);
+                const fireBall = new FireBall(wizard.follower.from, target);
+                game.fireBalls.push(fireBall);
                 res.end("true");
             });
     }
@@ -61,6 +75,6 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
 });
 
 server.listen(port, () => {
-    console.log(`http://:${port}`);
+    console.log(`http://localhost:${port}`);
     game.run();
 });

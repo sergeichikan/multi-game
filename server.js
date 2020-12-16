@@ -5,6 +5,7 @@ import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
 import { getRandomPoint } from "./libs/get-random-point.js";
+import { FireBall } from "./libs/fire-ball.js";
 // const host = "localhost";
 const port = 3000;
 const server = createServer();
@@ -43,18 +44,31 @@ server.on("request", (req, res) => {
             .then((body) => {
             const id = body.id;
             const point = body.point;
-            const filteredWizards = game.wizards.filter((wizard) => wizard.id === id);
-            // const wizard: Wizard | undefined = filteredWizards[0];
-            filteredWizards.forEach((wizard) => {
-                wizard.follower.setTarget(Point.fromObj(point));
-            });
+            const wizard = game.getWizard(id);
+            if (!wizard) {
+                throw new Error("invalid wizard");
+            }
+            wizard.follower.setTarget(Point.fromObj(point));
+            res.end("true");
+        });
+    }
+    if (req.url === "/fire") {
+        return getBody(req)
+            .then(({ id, point }) => {
+            const wizard = game.getWizard(id);
+            if (!wizard) {
+                throw new Error("invalid wizard");
+            }
+            const target = Point.fromObj(point);
+            const fireBall = new FireBall(wizard.follower.from, target);
+            game.fireBalls.push(fireBall);
             res.end("true");
         });
     }
     return;
 });
 server.listen(port, () => {
-    console.log(`http://:${port}`);
+    console.log(`http://localhost:${port}`);
     game.run();
 });
 //# sourceMappingURL=server.js.map
