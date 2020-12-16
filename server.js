@@ -60,7 +60,7 @@ server.on("request", (req, res) => {
                 throw new Error("invalid wizard");
             }
             const target = Point.fromObj(point);
-            const fireBall = new FireBall(wizard.follower.from, target);
+            const fireBall = new FireBall(wizard.follower.from, target, wizard.radius);
             game.fireBalls.push(fireBall);
             res.end("true");
         });
