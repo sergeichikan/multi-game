@@ -29,6 +29,7 @@ export class Game {
                 const distance: number = fireBall.follower.from.distance(wizard.follower.from);
                 if (distance < wizard.radius + fireBall.radius) {
                     wizard.hp -= fireBall.damage;
+                    fireBall.follower.stop();
                 }
             });
         });

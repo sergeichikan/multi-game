@@ -12,5 +12,5 @@ export class FireBallFollower extends Follower {
         super.setTarget(point);
     }
 }
-FireBallFollower.defaultStepLength = 20;
+FireBallFollower.defaultStepLength = 9;
 //# sourceMappingURL=fire-ball-follower.js.map
