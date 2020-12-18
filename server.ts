@@ -1,12 +1,8 @@
 import { createServer, ServerResponse, IncomingMessage } from "http";
 
 import { sendFile } from "./send-file.js";
-import { Wizard } from "./libs/wizard.js";
-import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
-import { getRandomPoint } from "./libs/get-random-point.js";
-import { FireBall } from "./libs/fire-ball.js";
 
 // const host = "localhost";
 const port = 3000;
@@ -32,46 +28,46 @@ server.on("request", (req: IncomingMessage, res: ServerResponse) => {
     return sendFile(req.url || "", res).catch((err) => res.end(JSON.stringify(err.message)));
 });
 
+const join = async (req: IncomingMessage, res: ServerResponse) => {
+    const { id } = await getBody<{ id: string }>(req);
+    return game.join(id);
+};
+const target = async (req: IncomingMessage, res: ServerResponse) => {
+    const { id, point } = await getBody<{ point: { x: number, y: number }, id: string }>(req);
+    game.target(id, point);
+    return res.end("true");
+};
+const fire = async (req: IncomingMessage, res: ServerResponse) => {
+    const { id, point } = await getBody<{ id: string, point: { x: number, y: number } }>(req);
+    game.fire(id, point);
+    return res.end("true");
+};
+const notFound = async (req: IncomingMessage, res: ServerResponse) => {
+    res.writeHead(404, {
+        "Content-Type": "text/plain; charset=utf-8",
+    })
+    res.end("not found");
+};
+const boom = async (req: IncomingMessage, res: ServerResponse) => {
+    // fdgfg
+};
+const postHandler = new Map<string, (req: IncomingMessage, res: ServerResponse) => Promise<unknown>>([
+    ["/join", join],
+    ["/target", target],
+    ["/fire", fire],
+    ["/boom", boom],
+]);
+
 server.on("request", (req: IncomingMessage, res: ServerResponse) => {
     if (req.method !== "POST") {
         return;
     }
-    if (req.url === "/join") {
-        return getBody<{ id: string }>(req)
-            .then((body) => {
-                const id = body.id;
-                const location = getRandomPoint();
-                const wizard = new Wizard(location, id);
-                game.wizards.push(wizard);
-            });
-    }
-    if (req.url === "/target") {
-        return getBody<{ point: { x: number, y: number }, id: string }>(req)
-            .then((body) => {
-                const id: string = body.id;
-                const point = body.point;
-                const wizard: Wizard | undefined = game.getWizard(id);
-                if (!wizard) {
-                    throw new Error("invalid wizard");
-                }
-                wizard.follower.setTarget(Point.fromObj(point));
-                res.end("true");
-            });
-    }
-    if (req.url === "/fire") {
-        return getBody<{ id: string, point: { x: number, y: number } }>(req)
-            .then(({ id, point }) => {
-                const wizard: Wizard | undefined = game.getWizard(id);
-                if (!wizard) {
-                    throw new Error("invalid wizard");
-                }
-                const target = Point.fromObj(point);
-                const fireBall = new FireBall(wizard.follower.from, target, wizard.radius);
-                game.fireBalls.push(fireBall);
-                res.end("true");
-            });
-    }
-    return;
+    const url: string = req.url || "";
+    const handler = postHandler.get(url) || notFound;
+    return handler(req, res).catch((err) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8")
+        res.end(JSON.stringify(err.message));
+    });
 });
 
 server.listen(port, () => {

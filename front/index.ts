@@ -1,42 +1,34 @@
 import { Point } from "../libs/point.js";
 import { Wizard } from "../libs/wizard.js";
 import { FireBall } from "../libs/fire-ball.js";
+import { SpellCasting } from "./spell-casting.js";
+import { initCanvas } from "./init-canvas.js";
 
 const idInput = document.querySelector<HTMLInputElement>('input[id="idInput"]');
 const joinButton = document.querySelector<HTMLButtonElement>('button[id="joinButton"]');
 const closeButton = document.querySelector<HTMLButtonElement>('button[id="closeButton"]');
 const addBotButton = document.querySelector<HTMLButtonElement>('button[id="addBotButton"]');
 const hpSpan = document.querySelector<HTMLDivElement>('div[id="hpSpan"]');
-const canvas = document.querySelector<HTMLCanvasElement>('canvas[id="mainCanvas"]');
-const ctx = canvas && canvas.getContext("2d");
 
-if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton || !canvas || !ctx) {
+if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton) {
     throw new Error("invalid elements");
 }
 
-canvas.width = 800;
-canvas.height = 800;
-canvas.style.background = "#eeeeee";
-
-// отключаем контекстное меню по нажатию на ПКМ
-canvas.addEventListener("contextmenu", (e) => e.button === 2 && e.preventDefault());
+const { canvas, ctx } = initCanvas();
 
 let game: {
     wizards: Wizard[];
     fireBalls: FireBall[];
+    bombs: Bomb[];
 } = {
     wizards: [],
     fireBalls: [],
+    bombs: [],
 };
-const keyUrlMap = new Map([
-    // ["KeyW", "/blink"],
-    ["KeyR", "/fire"],
-    // ["KeyE", "/bomb"],
-]);
-let keyboardCode: string = "";
+const spellCasting = new SpellCasting();
 
 document.addEventListener("keydown", (event: KeyboardEvent) => {
-    keyboardCode = event.code;
+    spellCasting.keydown(event);
 });
 
 const eventSource = new EventSource("/sse");
@@ -72,8 +64,8 @@ canvas.addEventListener("mousedown", (e: MouseEvent) => {
         point,
     };
     const body: string = JSON.stringify(data);
-    const url: string = keyUrlMap.get(keyboardCode) || "/target";
-    keyboardCode = "";
+    const url: string = spellCasting.getUrl();
+    spellCasting.clear();
     return fetch(url, {
         method: "POST",
         body,

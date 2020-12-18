@@ -1,30 +1,23 @@
 import { Point } from "../libs/point.js";
+import { SpellCasting } from "./spell-casting.js";
+import { initCanvas } from "./init-canvas.js";
 const idInput = document.querySelector('input[id="idInput"]');
 const joinButton = document.querySelector('button[id="joinButton"]');
 const closeButton = document.querySelector('button[id="closeButton"]');
 const addBotButton = document.querySelector('button[id="addBotButton"]');
 const hpSpan = document.querySelector('div[id="hpSpan"]');
-const canvas = document.querySelector('canvas[id="mainCanvas"]');
-const ctx = canvas && canvas.getContext("2d");
-if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton || !canvas || !ctx) {
+if (!idInput || !joinButton || !closeButton || !hpSpan || !addBotButton) {
     throw new Error("invalid elements");
 }
-canvas.width = 800;
-canvas.height = 800;
-canvas.style.background = "#eeeeee";
-// отключаем контекстное меню по нажатию на ПКМ
-canvas.addEventListener("contextmenu", (e) => e.button === 2 && e.preventDefault());
+const { canvas, ctx } = initCanvas();
 let game = {
     wizards: [],
     fireBalls: [],
+    bombs: [],
 };
-const keyUrlMap = new Map([
-    // ["KeyW", "/blink"],
-    ["KeyR", "/fire"],
-]);
-let keyboardCode = "";
+const spellCasting = new SpellCasting();
 document.addEventListener("keydown", (event) => {
-    keyboardCode = event.code;
+    spellCasting.keydown(event);
 });
 const eventSource = new EventSource("/sse");
 eventSource.addEventListener("open", () => {
@@ -56,8 +49,8 @@ canvas.addEventListener("mousedown", (e) => {
         point,
     };
     const body = JSON.stringify(data);
-    const url = keyUrlMap.get(keyboardCode) || "/target";
-    keyboardCode = "";
+    const url = spellCasting.getUrl();
+    spellCasting.clear();
     return fetch(url, {
         method: "POST",
         body,

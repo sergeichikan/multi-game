@@ -1,11 +1,7 @@
 import { createServer } from "http";
 import { sendFile } from "./send-file.js";
-import { Wizard } from "./libs/wizard.js";
-import { Point } from "./libs/point.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
-import { getRandomPoint } from "./libs/get-random-point.js";
-import { FireBall } from "./libs/fire-ball.js";
 // const host = "localhost";
 const port = 3000;
 const server = createServer();
@@ -26,46 +22,45 @@ server.on("request", (req, res) => {
     }
     return sendFile(req.url || "", res).catch((err) => res.end(JSON.stringify(err.message)));
 });
+const join = async (req, res) => {
+    const { id } = await getBody(req);
+    return game.join(id);
+};
+const target = async (req, res) => {
+    const { id, point } = await getBody(req);
+    game.target(id, point);
+    return res.end("true");
+};
+const fire = async (req, res) => {
+    const { id, point } = await getBody(req);
+    game.fire(id, point);
+    return res.end("true");
+};
+const notFound = async (req, res) => {
+    res.writeHead(404, {
+        "Content-Type": "text/plain; charset=utf-8",
+    });
+    res.end("not found");
+};
+const boom = async (req, res) => {
+    // fdgfg
+};
+const postHandler = new Map([
+    ["/join", join],
+    ["/target", target],
+    ["/fire", fire],
+    ["/boom", boom],
+]);
 server.on("request", (req, res) => {
     if (req.method !== "POST") {
         return;
     }
-    if (req.url === "/join") {
-        return getBody(req)
-            .then((body) => {
-            const id = body.id;
-            const location = getRandomPoint();
-            const wizard = new Wizard(location, id);
-            game.wizards.push(wizard);
-        });
-    }
-    if (req.url === "/target") {
-        return getBody(req)
-            .then((body) => {
-            const id = body.id;
-            const point = body.point;
-            const wizard = game.getWizard(id);
-            if (!wizard) {
-                throw new Error("invalid wizard");
-            }
-            wizard.follower.setTarget(Point.fromObj(point));
-            res.end("true");
-        });
-    }
-    if (req.url === "/fire") {
-        return getBody(req)
-            .then(({ id, point }) => {
-            const wizard = game.getWizard(id);
-            if (!wizard) {
-                throw new Error("invalid wizard");
-            }
-            const target = Point.fromObj(point);
-            const fireBall = new FireBall(wizard.follower.from, target, wizard.radius);
-            game.fireBalls.push(fireBall);
-            res.end("true");
-        });
-    }
-    return;
+    const url = req.url || "";
+    const handler = postHandler.get(url) || notFound;
+    return handler(req, res).catch((err) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify(err.message));
+    });
 });
 server.listen(port, () => {
     console.log(`http://localhost:${port}`);

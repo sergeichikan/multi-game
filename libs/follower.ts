@@ -1,44 +1,13 @@
 import { Point } from "./point.js";
+import { LineSegment } from "./line-segment.js";
 
-export class Follower {
+export class Follower extends LineSegment {
 
-    public to: Point;
-    public from: Point;
     public stepLength: number;
-    public distance: number;
-    private cos: number;
-    private sin: number;
 
     public constructor(from: Point, stepLength: number) {
+        super(from)
         this.stepLength = stepLength;
-        this.from = this.to = from;
-        this.distance = 0;
-        this.cos = 0;
-        this.sin = 0;
-    }
-
-    protected rebuild() {
-        this.distance = this.from.distance(this.to);
-        const angle: number = Math.atan2(this.to.y - this.from.y, this.to.x - this.from.x);
-        this.cos = Math.cos(angle);
-        this.sin = Math.sin(angle);
-    }
-
-    public setTarget(target: Point) {
-        this.to = target;
-        this.rebuild();
-    }
-
-    protected getPointOnLine(stepLength: number): Point {
-        const dx = this.cos * stepLength;
-        const dy = this.sin * stepLength;
-        return new Point(this.from.x + dx, this.from.y + dy);
-    }
-
-    public badStep() {
-        this.from = this.getPointOnLine(this.stepLength);
-        this.distance = this.from.distance(this.to);
-        console.log(this.distance, this.to, this.from);
     }
 
     public step() {
@@ -49,7 +18,15 @@ export class Follower {
     }
 
     public stop() {
-        this.to = this.from;
-        this.distance = 0;
+        this.reset();
+    }
+
+    public shiftTarget(length: number) {
+        const point = this.getPointOnLine(length);
+        this.setTarget(point);
+    }
+
+    public shiftFrom(length: number) {
+        this.from = this.getPointOnLine(length);
     }
 }
