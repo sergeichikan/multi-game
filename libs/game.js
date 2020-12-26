@@ -2,6 +2,7 @@ import { Wizard } from "./wizard.js";
 import { FireBall } from "./fire-ball.js";
 import { getRandomPoint } from "./get-random-point.js";
 import { Point } from "./point.js";
+import { Bomb } from "./bomb.js";
 export class Game {
     constructor() {
         this.wizards = [];
@@ -26,18 +27,24 @@ export class Game {
                 }
             });
         });
-        this.bombs = this.bombs.filter((bomb) => bomb.radius);
+        this.bombs = this.bombs.filter(({ count }) => count > 0);
         this.bombs.forEach((bomb) => {
-            // bomb.radius 10 20 30 0
             bomb.step();
         });
-        // начисление урона по магам
+        this.bombs.forEach((bomb) => {
+            this.wizards.forEach((wizard) => {
+                const distance = bomb.from.distance(wizard.follower.from);
+                if (distance < bomb.radius + wizard.radius) {
+                    wizard.hp -= bomb.damage;
+                }
+            });
+        });
     }
     send() {
         const data = {
             wizards: this.wizards,
             fireBalls: this.fireBalls,
-            bomb: this.bomb,
+            bombs: this.bombs,
         };
         const json = JSON.stringify(data);
         this.responses.forEach((res) => {
@@ -74,6 +81,14 @@ export class Game {
         const fireBall = new FireBall(wizard.follower.from, 9);
         fireBall.shift(target, wizard.radius);
         this.fireBalls.push(fireBall);
+    }
+    bomb(id, target) {
+        const wizard = this.getWizard(id);
+        if (!wizard) {
+            throw new Error("invalid wizard");
+        }
+        const bomb = new Bomb(target);
+        this.bombs.push(bomb);
     }
 }
 //# sourceMappingURL=game.js.map

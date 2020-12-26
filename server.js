@@ -2,6 +2,7 @@ import { createServer } from "http";
 import { sendFile } from "./send-file.js";
 import { getBody } from "./libs/get-body.js";
 import { Game } from "./libs/game.js";
+import { Point } from "./libs/point.js";
 // const host = "localhost";
 const port = 3000;
 const server = createServer();
@@ -42,14 +43,17 @@ const notFound = async (req, res) => {
     });
     res.end("not found");
 };
-const boom = async (req, res) => {
-    // fdgfg
+const bomb = async (req, res) => {
+    const { id, point } = await getBody(req);
+    const target = Point.fromObj(point);
+    game.bomb(id, target);
+    res.end();
 };
 const postHandler = new Map([
     ["/join", join],
     ["/target", target],
     ["/fire", fire],
-    ["/boom", boom],
+    ["/bomb", bomb],
 ]);
 server.on("request", (req, res) => {
     if (req.method !== "POST") {

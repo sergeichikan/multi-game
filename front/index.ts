@@ -3,6 +3,7 @@ import { Wizard } from "../libs/wizard.js";
 import { FireBall } from "../libs/fire-ball.js";
 import { SpellCasting } from "./spell-casting.js";
 import { initCanvas } from "./init-canvas.js";
+import { Bomb } from "../libs/bomb.js";
 
 const idInput = document.querySelector<HTMLInputElement>('input[id="idInput"]');
 const joinButton = document.querySelector<HTMLButtonElement>('button[id="joinButton"]');
@@ -38,6 +39,7 @@ eventSource.addEventListener("open", () => {
 });
 eventSource.addEventListener("message", ({ data }: MessageEvent) => {
     game = JSON.parse(data);
+    console.log(game.bombs.length);
     hpSpan.innerHTML = game.wizards
         .map((wizard) => `${wizard.id}: ${wizard.hp}`)
         .join("<br>")
@@ -80,6 +82,14 @@ const drawWizard = (wizard: Wizard, fillStyle: string) => {
     ctx.closePath();
 };
 
+const drawBomb = (bomb: Bomb) => {
+    ctx.beginPath();
+    ctx.arc(bomb.from.x, bomb.from.y, bomb.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+    ctx.closePath();
+};
+
 const wizardDrawTarget = (wizard: Wizard) => {
     ctx.beginPath();
     ctx.arc(wizard.follower.to.x, wizard.follower.to.y, 4, 0, Math.PI * 2);
@@ -118,6 +128,7 @@ const draw = () => {
         wizardDrawPath(wizard);
     });
     game.fireBalls.forEach(fireBallDraw);
+    game.bombs.forEach(drawBomb);
     requestAnimationFrame(draw);
 };
 

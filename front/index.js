@@ -25,6 +25,7 @@ eventSource.addEventListener("open", () => {
 });
 eventSource.addEventListener("message", ({ data }) => {
     game = JSON.parse(data);
+    console.log(game.bombs.length);
     hpSpan.innerHTML = game.wizards
         .map((wizard) => `${wizard.id}: ${wizard.hp}`)
         .join("<br>");
@@ -63,6 +64,13 @@ const drawWizard = (wizard, fillStyle) => {
     ctx.fill();
     ctx.closePath();
 };
+const drawBomb = (bomb) => {
+    ctx.beginPath();
+    ctx.arc(bomb.from.x, bomb.from.y, bomb.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+    ctx.closePath();
+};
 const wizardDrawTarget = (wizard) => {
     ctx.beginPath();
     ctx.arc(wizard.follower.to.x, wizard.follower.to.y, 4, 0, Math.PI * 2);
@@ -99,6 +107,7 @@ const draw = () => {
         wizardDrawPath(wizard);
     });
     game.fireBalls.forEach(fireBallDraw);
+    game.bombs.forEach(drawBomb);
     requestAnimationFrame(draw);
 };
 draw();
