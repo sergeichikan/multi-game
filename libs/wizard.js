@@ -5,10 +5,8 @@ export class Wizard {
         this.follower = new Follower(location, 2);
         this.hp = 100;
         this.radius = 10;
-    }
-    blink(target) {
-        this.follower.from = target;
-        this.follower.stop();
+        this.cells = [];
+        // this.attack = false;
     }
 }
 //# sourceMappingURL=wizard.js.map

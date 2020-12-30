@@ -39,7 +39,6 @@ eventSource.addEventListener("open", () => {
 });
 eventSource.addEventListener("message", ({ data }: MessageEvent) => {
     game = JSON.parse(data);
-    console.log(game.bombs.length);
     hpSpan.innerHTML = game.wizards
         .map((wizard) => `${wizard.id}: ${wizard.hp}`)
         .join("<br>")

@@ -3,6 +3,23 @@ import { FireBall } from "./fire-ball.js";
 import { getRandomPoint } from "./get-random-point.js";
 import { Point } from "./point.js";
 import { Bomb } from "./bomb.js";
+export class CoolDown {
+    constructor(milliSeconds) {
+        this.milliSeconds = milliSeconds;
+        this.status = false;
+    }
+    run() {
+        setTimeout(() => {
+            this.status = false;
+        }, this.milliSeconds);
+        this.status = true;
+    }
+}
+export class SkillCell {
+    constructor(cooldown) {
+        this.cooldown = cooldown;
+    }
+}
 export class Game {
     constructor() {
         this.wizards = [];
@@ -72,15 +89,21 @@ export class Game {
         }
         wizard.follower.setTarget(Point.fromObj(point));
     }
-    fire(id, point) {
+    fire(id, indexCell, point) {
         const wizard = this.getWizard(id);
         if (!wizard) {
             throw new Error("invalid wizard");
         }
-        const target = Point.fromObj(point);
-        const fireBall = new FireBall(wizard.follower.from, 9);
-        fireBall.shift(target, wizard.radius);
-        this.fireBalls.push(fireBall);
+        const cell = wizard.cells[indexCell];
+        if (!cell.cooldown.status) {
+            const fireBall = new FireBall(wizard.follower.from, 9);
+            fireBall.shift(point, wizard.radius);
+            this.fireBalls.push(fireBall);
+            cell.cooldown.run();
+        }
+        else {
+            throw new Error("cd");
+        }
     }
     bomb(id, target) {
         const wizard = this.getWizard(id);

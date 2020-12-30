@@ -39,8 +39,9 @@ const target = async (req: IncomingMessage, res: ServerResponse) => {
     return res.end("true");
 };
 const fire = async (req: IncomingMessage, res: ServerResponse) => {
-    const { id, point } = await getBody<{ id: string, point: { x: number, y: number } }>(req);
-    game.fire(id, point);
+    const { id, point, indexCell } = await getBody<{ id: string, point: { x: number, y: number }, indexCell: number }>(req);
+    const target = Point.fromObj(point);
+    game.fire(id, indexCell, target);
     return res.end("true");
 };
 const notFound = async (req: IncomingMessage, res: ServerResponse) => {
